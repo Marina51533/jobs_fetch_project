@@ -20,6 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BOARDS_PATH = path.resolve(__dirname, '../../config/boards.json');
 const CONFIDENCE_THRESHOLD = parseFloat(process.env.CONFIDENCE_THRESHOLD || '0.8');
 const FETCH_DELAY_MS = parseInt(process.env.FETCH_DELAY_MS || '200', 10);
+const MAX_SOURCE_JOB_AGE_DAYS = parseInt(process.env.MAX_SOURCE_JOB_AGE_DAYS || '0', 10);
 
 function validateEnv() {
   const required = [
@@ -43,6 +44,17 @@ function validateEnv() {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isWithinAgeLimit(updatedAt, maxAgeDays) {
+  if (!maxAgeDays || maxAgeDays <= 0) return true;
+  if (!updatedAt) return false;
+
+  const timestamp = Date.parse(updatedAt);
+  if (Number.isNaN(timestamp)) return false;
+
+  const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
+  return (Date.now() - timestamp) <= maxAgeMs;
 }
 
 async function loadBoards() {
@@ -117,6 +129,10 @@ async function stageFetchAndProcess() {
     for (const rawJob of rawJobs) {
       stats.fetched++;
       const dedupeKey = `greenhouse:${boardToken}:${rawJob.id}`;
+
+      if (!isWithinAgeLimit(rawJob.updated_at, MAX_SOURCE_JOB_AGE_DAYS)) {
+        continue;
+      }
 
       if (await isDuplicate(dedupeKey)) {
         stats.duplicates++;

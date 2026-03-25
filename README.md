@@ -64,6 +64,7 @@ npm start
 | `CONFIDENCE_THRESHOLD` | Minimum confidence for auto-publish (default: 0.8) |
 | `FETCH_DELAY_MS` | Delay between Greenhouse API calls (default: 200) |
 | `PUBLISH_DELAY_MS` | Delay between Telegram posts (default: 1000) |
+| `MAX_SOURCE_JOB_AGE_DAYS` | Only process jobs updated in the last N days; `0` disables the filter |
 
 ## Project Structure
 

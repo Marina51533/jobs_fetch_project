@@ -1,6 +1,11 @@
 {
   "boards": [
-    { "token": "stripe", "company": "Stripe" }
+    { "token": "stripe", "company": "Stripe" },
+    { "token": "gitlab", "company": "GitLab" },
+    { "token": "datadog", "company": "Datadog" },
+    { "token": "canonical", "company": "Canonical" },
+    { "token": "mongodb", "company": "MongoDB" },
+    { "token": "discord", "company": "Discord" }
 
   ]
 }

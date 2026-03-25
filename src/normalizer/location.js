@@ -46,6 +46,27 @@ const NON_EU_REGION_PATTERNS = [
   /\blatin\s+america\b/i,
 ];
 
+const NON_EU_LOCATION_PATTERNS = [
+  /\busa\b/i,
+  /\bunited\s+states\b/i,
+  /\bcanada\b/i,
+  /\bisrael\b/i,
+  /\bindia\b/i,
+  /\bsingapore\b/i,
+  /\baustralia\b/i,
+  /\bjapan\b/i,
+  /\bmexico\b/i,
+  /\bbrazil\b/i,
+  /\bargentina\b/i,
+  /\bchile\b/i,
+  /\bcolombia\b/i,
+  /\bnew\s+york\b/i,
+  /\bseattle\b/i,
+  /\bsan\s+francisco\b/i,
+  /\btoronto\b/i,
+  /\btel\s+aviv\b/i,
+];
+
 /**
  * Extract work mode from a location string.
  */
@@ -90,6 +111,11 @@ export function extractCountry(locationText) {
 export function isNonEuRestricted(locationText) {
   const lower = (locationText || '').toLowerCase();
   return NON_EU_REGION_PATTERNS.some(p => p.test(lower));
+}
+
+export function isExplicitNonEuropeanLocation(locationText) {
+  const lower = (locationText || '').toLowerCase();
+  return NON_EU_LOCATION_PATTERNS.some(p => p.test(lower));
 }
 
 /**

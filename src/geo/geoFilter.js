@@ -1,4 +1,4 @@
-import { isNonEuRestricted, isEuRegion } from '../normalizer/location.js';
+import { isNonEuRestricted, isEuRegion, isExplicitNonEuropeanLocation } from '../normalizer/location.js';
 
 /**
  * Apply geography filter to a normalized job.
@@ -29,6 +29,7 @@ export function applyGeoFilter(job) {
   if (work_mode === 'onsite') {
     if (location_country) return 'publish';      // country was resolved to Europe
     if (isEuRegion(location_text)) return 'publish';
+    if (isExplicitNonEuropeanLocation(location_text)) return 'reject';
     if (isNonEuRestricted(location_text)) return 'reject';
     // Ambiguous onsite
     return location_text ? 'review' : 'review';
@@ -37,6 +38,7 @@ export function applyGeoFilter(job) {
   if (work_mode === 'hybrid') {
     if (location_country) return 'publish';
     if (isEuRegion(location_text)) return 'publish';
+    if (isExplicitNonEuropeanLocation(location_text)) return 'reject';
     // Hybrid with unclear location
     return 'review';
   }

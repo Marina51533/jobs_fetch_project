@@ -65,6 +65,16 @@ function getKeywords(config, mode) {
       'solutions developer',
       'solutions engineer',
       'engineering manager',
+      'technical program manager',
+      'technical project manager',
+      'ux researcher',
+      'user researcher',
+      'it support',
+      'it support engineer',
+      'technical support engineer',
+      'data scientist',
+      'applied scientist',
+      'research scientist',
     ];
   }
 
@@ -72,6 +82,10 @@ function getKeywords(config, mode) {
     ...getKeywords(config, 'qa'),
     ...getKeywords(config, 'developer'),
   ];
+}
+
+function getExcludeKeywords(config) {
+  return [...new Set((config.exclude_keywords || []).map(k => k.trim()).filter(Boolean))];
 }
 
 function buildMatcher(keywords) {
@@ -101,12 +115,20 @@ async function main() {
   const boardsConfig = await loadJson(BOARDS_PATH);
   const classifierConfig = await loadJson(CLASSIFIER_CONFIG_PATH);
   const matcher = buildMatcher(getKeywords(classifierConfig, mode));
+  const excludeKeywords = getExcludeKeywords(classifierConfig).map(keyword => keyword.toLowerCase());
   const matches = [];
 
   for (const board of boardsConfig.boards) {
     try {
       const jobs = await fetchBoardJobs(board.token);
-      const matchedJobs = jobs.filter(job => matcher.test(job.title || ''));
+      const matchedJobs = jobs.filter(job => {
+        const title = job.title || '';
+        const titleLower = title.toLowerCase();
+        if (excludeKeywords.some(keyword => titleLower.includes(keyword))) {
+          return false;
+        }
+        return matcher.test(title);
+      });
 
       for (const job of matchedJobs) {
         matches.push({
