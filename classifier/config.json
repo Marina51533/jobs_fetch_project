@@ -1,0 +1,59 @@
+{
+  "confidence_threshold": 0.8,
+  "qa_keywords": {
+    "strong": [
+      "QA Engineer", "Quality Assurance", "Test Engineer", "SDET",
+      "Test Automation Engineer", "Software Tester", "Quality Engineer",
+      "QA Analyst", "Test Analyst", "QA Lead", "Test Lead",
+      "Performance Tester", "QA Manager", "Test Manager",
+      "Automation QA", "Manual Tester", "QA Specialist"
+    ],
+    "moderate": [
+      "QA", "Testing", "Test Automation", "Quality",
+      "Selenium", "Cypress", "Playwright", "TestRail",
+      "Appium", "JMeter", "Load Testing", "Regression"
+    ],
+    "weak": [
+      "validation", "verification", "test cases",
+      "bug tracking", "defect management"
+    ]
+  },
+  "developer_keywords": {
+    "strong": [
+      "Software Engineer", "Software Developer", "Frontend Engineer",
+      "Backend Engineer", "Full Stack Engineer", "Full-Stack Developer",
+      "Fullstack Engineer", "DevOps Engineer", "SRE",
+      "Site Reliability Engineer", "Platform Engineer",
+      "Mobile Developer", "iOS Developer", "Android Developer",
+      "Web Developer", "Cloud Engineer", "Data Engineer",
+      "Infrastructure Engineer", "Systems Engineer"
+    ],
+    "moderate": [
+      "Developer", "Engineer", "Frontend", "Backend", "Full Stack",
+      "React", "Node.js", "Python Developer", "Java Developer",
+      "Go Developer", "Rust Developer", "TypeScript",
+      "Kubernetes", "AWS", "Azure", "GCP", "Terraform",
+      "Microservices", "API Developer"
+    ],
+    "weak": [
+      "programming", "software development", "coding",
+      "architecture", "technical lead"
+    ]
+  },
+  "exclude_keywords": [
+    "Product Manager", "Project Manager", "Scrum Master",
+    "UX Designer", "UI Designer", "Graphic Designer",
+    "Marketing", "Sales", "HR", "Recruiter",
+    "Finance", "Accounting", "Legal", "Compliance",
+    "Customer Support", "Customer Success"
+  ],
+  "scoring": {
+    "strong_title_match": 0.9,
+    "moderate_title_match": 0.7,
+    "weak_title_match": 0.5,
+    "strong_description_match": 0.6,
+    "moderate_description_match": 0.4,
+    "weak_description_match": 0.2,
+    "exclude_penalty": -0.5
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "jobs-fetch-project",
+  "version": "1.0.0",
+  "description": "Automatic job aggregation and publishing for DEV Career Community | Europe",
+  "main": "src/pipeline/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/pipeline/index.js",
+    "test": "node --test src/**/*.test.js",
+    "classify": "python3 classifier/classify.py"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "node-fetch": "^3.3.2",
+    "html-to-text": "^9.0.5"
+  },
+  "devDependencies": {},
+  "keywords": ["jobs", "aggregation", "telegram", "greenhouse", "qa", "developer"],
+  "license": "PRIVATE"
+}
