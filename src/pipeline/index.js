@@ -46,8 +46,8 @@ async function stageProcessReviews() {
 
   for (const job of approvedJobs) {
     try {
-      const messageText = formatJobPost(job);
-      const messageId = await publishJob(job, messageText);
+      const post = formatJobPost(job);
+      const messageId = await publishJob(job, post);
       await markPublished(
         job.id,
         job.publish_target === 'qa' ? 'qa_bot' : 'dev_bot',
@@ -165,8 +165,8 @@ async function stageFetchAndProcess() {
 
         // Act on decision
         if (routing.final_decision === 'auto_publish') {
-          const messageText = formatJobPost({ ...enrichedJob, id: saved.id });
-          const messageId = await publishJob(enrichedJob, messageText);
+          const post = formatJobPost({ ...enrichedJob, id: saved.id });
+          const messageId = await publishJob(enrichedJob, post);
           await markPublished(
             saved.id,
             routing.publish_target === 'qa' ? 'qa_bot' : 'dev_bot',

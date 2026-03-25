@@ -5,6 +5,13 @@ const WORK_MODE_EMOJI = {
   unknown: '❓',
 };
 
+const WORK_MODE_LABEL = {
+  remote: 'Remote',
+  onsite: 'On-site',
+  hybrid: 'Hybrid',
+  unknown: 'Not specified',
+};
+
 /**
  * Escape HTML special characters for Telegram HTML parse mode.
  */
@@ -13,6 +20,43 @@ function escapeHtml(text) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function pluralize(value, unit) {
+  return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
+}
+
+function formatPostedAt(isoDate) {
+  if (!isoDate) return 'Recently posted';
+
+  const timestamp = Date.parse(isoDate);
+  if (Number.isNaN(timestamp)) return 'Recently posted';
+
+  const diffMs = Date.now() - timestamp;
+  if (diffMs <= 0) return 'Today';
+
+  const minutes = Math.floor(diffMs / (60 * 1000));
+  if (minutes < 60) return pluralize(Math.max(minutes, 1), 'minute');
+
+  const hours = Math.floor(diffMs / (60 * 60 * 1000));
+  if (hours < 24) return pluralize(hours, 'hour');
+
+  const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  if (days < 7) return pluralize(days, 'day');
+
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return pluralize(weeks, 'week');
+
+  const months = Math.floor(days / 30);
+  if (months < 12) return pluralize(months, 'month');
+
+  const years = Math.floor(days / 365);
+  return pluralize(years, 'year');
+}
+
+function buildShareUrl(job) {
+  const shareText = `${job.title} at ${job.company}`;
+  return `https://t.me/share/url?url=${encodeURIComponent(job.job_url)}&text=${encodeURIComponent(shareText)}`;
 }
 
 /**
@@ -53,23 +97,26 @@ function buildSummary(descriptionText) {
  */
 export function formatJobPost(job) {
   const emoji = WORK_MODE_EMOJI[job.work_mode] || '❓';
-  const tags = buildTags(job);
-  const summary = buildSummary(job.description_text);
+  const typeLabel = WORK_MODE_LABEL[job.work_mode] || WORK_MODE_LABEL.unknown;
+  const postedAtLabel = formatPostedAt(job.updated_at_source);
+  const locationLabel = job.location_text || 'Not specified';
 
-  let message = `🔍 <b>${escapeHtml(job.title)}</b>\n`;
-  message += `🏢 ${escapeHtml(job.company)}\n`;
-  message += `📍 ${escapeHtml(job.location_text || 'Not specified')} | ${emoji} ${job.work_mode}\n`;
-  message += `🔗 <a href="${escapeHtml(job.job_url)}">Apply</a>\n`;
+  let message = `💼 <b>${escapeHtml(job.title)}</b>\n`;
+  message += `🏢 <b>${escapeHtml(job.company)}</b>\n`;
+  message += `📍 ${escapeHtml(locationLabel)}\n`;
+  message += `${emoji} ${escapeHtml(typeLabel)}\n`;
+  message += `🕒 Posted ${escapeHtml(postedAtLabel)}\n`;
+  message += `✅ <a href="${escapeHtml(job.job_url)}">Apply now</a>`;
 
-  if (summary) {
-    message += `\n${escapeHtml(summary)}\n`;
-  }
-
-  if (tags) {
-    message += `\n${tags}`;
-  }
-
-  return message;
+  return {
+    text: message,
+    replyMarkup: {
+      inline_keyboard: [[
+        { text: '✅ Apply', url: job.job_url },
+        { text: '↗️ Share', url: buildShareUrl(job) },
+      ]],
+    },
+  };
 }
 
 /**

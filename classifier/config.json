@@ -6,16 +6,24 @@
       "Test Automation Engineer", "Software Tester", "Quality Engineer",
       "QA Analyst", "Test Analyst", "QA Lead", "Test Lead",
       "Performance Tester", "QA Manager", "Test Manager",
-      "Automation QA", "Manual Tester", "QA Specialist"
+      "Automation QA", "Manual Tester", "QA Specialist",
+      "Quality Manager", "Quality and Test", "Quality & Test",
+      "Test Engineering", "Quality Engineering", "QE Manager",
+      "Certification Quality", "Hardware Certification Quality",
+      "Verification Engineer", "Validation Engineer"
     ],
     "moderate": [
       "QA", "Testing", "Test Automation", "Quality",
       "Selenium", "Cypress", "Playwright", "TestRail",
-      "Appium", "JMeter", "Load Testing", "Regression"
+      "Appium", "JMeter", "Load Testing", "Regression",
+      "Quality Control", "Test Framework", "Test Strategy",
+      "Test Ops", "Release Quality", "QE", "Verification",
+      "Validation", "Certification", "Reliability Testing"
     ],
     "weak": [
       "validation", "verification", "test cases",
-      "bug tracking", "defect management"
+      "bug tracking", "defect management", "quality metrics",
+      "test plans", "defects", "acceptance testing"
     ]
   },
   "developer_keywords": {
@@ -26,18 +34,24 @@
       "Site Reliability Engineer", "Platform Engineer",
       "Mobile Developer", "iOS Developer", "Android Developer",
       "Web Developer", "Cloud Engineer", "Data Engineer",
-      "Infrastructure Engineer", "Systems Engineer"
+      "Infrastructure Engineer", "Systems Engineer",
+      "Application Engineer", "Product Engineer", "Solutions Developer",
+      "Solutions Engineer", "AI Solutions Developer", "ML Engineer",
+      "Software Engineering Manager", "Engineering Manager"
     ],
     "moderate": [
       "Developer", "Engineer", "Frontend", "Backend", "Full Stack",
       "React", "Node.js", "Python Developer", "Java Developer",
       "Go Developer", "Rust Developer", "TypeScript",
       "Kubernetes", "AWS", "Azure", "GCP", "Terraform",
-      "Microservices", "API Developer"
+      "Microservices", "API Developer", "Application Development",
+      "Distributed Systems", "Systems Design", "Platform",
+      "AI Engineer", "Machine Learning", "Software Architecture"
     ],
     "weak": [
       "programming", "software development", "coding",
-      "architecture", "technical lead"
+      "architecture", "technical lead", "implementation",
+      "build systems", "developer tools"
     ]
   },
   "exclude_keywords": [

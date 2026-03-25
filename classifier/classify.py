@@ -62,15 +62,7 @@ def classify_job(job, config):
     title = job.get("title", "")
     description = job.get("description", "")
     scoring = config["scoring"]
-
-    # Check exclusions first
     excluded, exclude_kw = check_exclusions(title, config.get("exclude_keywords", []))
-    if excluded:
-        return {
-            "label": "Uncertain",
-            "confidence": 0.1,
-            "reasons": [f"excluded_keyword:{exclude_kw}"],
-        }
 
     # Score QA
     qa_title_score, qa_title_matches = match_keywords(
@@ -92,6 +84,14 @@ def classify_job(job, config):
     dev_total = dev_title_score + dev_desc_score
     dev_reasons = dev_title_matches + dev_desc_matches
 
+    # Exclusions reduce confidence but do not automatically reject clearly technical roles.
+    if excluded:
+        penalty = abs(scoring.get("exclude_penalty", -0.5))
+        qa_total = max(0.0, qa_total - penalty)
+        dev_total = max(0.0, dev_total - penalty)
+        qa_reasons.append(f"excluded_keyword:{exclude_kw}")
+        dev_reasons.append(f"excluded_keyword:{exclude_kw}")
+
     # Determine label
     threshold = config.get("confidence_threshold", 0.8)
 
@@ -99,7 +99,7 @@ def classify_job(job, config):
         return {
             "label": "Uncertain",
             "confidence": 0.0,
-            "reasons": ["no_keyword_match"],
+            "reasons": ["no_keyword_match"] + ([f"excluded_keyword:{exclude_kw}"] if excluded else []),
         }
 
     if qa_total > dev_total:

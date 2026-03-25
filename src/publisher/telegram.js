@@ -6,24 +6,21 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Send a message to a Telegram chat/topic.
- * Returns the Telegram message_id on success.
- */
-export async function sendMessage(botToken, chatId, topicId, text, replyMarkup = null) {
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+function buildRequestBody(chatId, topicId, replyMarkup = null) {
   const body = {
     chat_id: chatId,
     message_thread_id: topicId ? Number(topicId) : undefined,
-    text,
-    parse_mode: 'HTML',
-    disable_web_page_preview: true,
   };
 
   if (replyMarkup) {
     body.reply_markup = JSON.stringify(replyMarkup);
   }
 
+  return body;
+}
+
+async function telegramPost(botToken, method, body) {
+  const url = `https://api.telegram.org/bot${botToken}/${method}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -31,12 +28,77 @@ export async function sendMessage(botToken, chatId, topicId, text, replyMarkup =
   });
 
   const data = await res.json();
-
   if (!data.ok) {
-    throw new Error(`Telegram sendMessage error: ${JSON.stringify(data)}`);
+    throw new Error(`Telegram ${method} error: ${JSON.stringify(data)}`);
   }
 
-  return data.result.message_id;
+  return data.result;
+}
+
+function resolveUrl(url, baseUrl) {
+  try {
+    return new URL(url, baseUrl).toString();
+  } catch {
+    return null;
+  }
+}
+
+function extractMetaContent(html, patterns) {
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match?.[1]) {
+      return match[1].trim();
+    }
+  }
+  return null;
+}
+
+async function resolveBannerUrl(job) {
+  try {
+    const res = await fetch(job.job_url, { redirect: 'follow' });
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const imageUrl = extractMetaContent(html, [
+      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["'][^>]*>/i,
+      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+      /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["'][^>]*>/i,
+      /<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["'][^>]*>/i,
+    ]);
+
+    return imageUrl ? resolveUrl(imageUrl, res.url || job.job_url) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function sendPhoto(botToken, chatId, topicId, photoUrl, caption, replyMarkup = null) {
+  const body = {
+    ...buildRequestBody(chatId, topicId, replyMarkup),
+    photo: photoUrl,
+    caption,
+    parse_mode: 'HTML',
+  };
+
+  const result = await telegramPost(botToken, 'sendPhoto', body);
+  return result.message_id;
+}
+
+/**
+ * Send a message to a Telegram chat/topic.
+ * Returns the Telegram message_id on success.
+ */
+export async function sendMessage(botToken, chatId, topicId, text, replyMarkup = null) {
+  const body = {
+    ...buildRequestBody(chatId, topicId, replyMarkup),
+    text,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+  };
+
+  const result = await telegramPost(botToken, 'sendMessage', body);
+  return result.message_id;
 }
 
 /**
@@ -87,13 +149,17 @@ export async function answerCallbackQuery(botToken, callbackQueryId, text = '') 
  * Publish a job to the correct Telegram topic.
  * Returns the message_id.
  */
-export async function publishJob(job, messageText) {
+export async function publishJob(job, post) {
   const isQa = job.publish_target === 'qa';
   const botToken = isQa ? process.env.QA_BOT_TOKEN : process.env.DEV_BOT_TOKEN;
   const topicId = isQa ? process.env.QA_TOPIC_ID : process.env.DEV_TOPIC_ID;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  const messageId = await sendMessage(botToken, chatId, topicId, messageText);
+  const bannerUrl = await resolveBannerUrl(job);
+  const messageId = bannerUrl
+    ? await sendPhoto(botToken, chatId, topicId, bannerUrl, post.text, post.replyMarkup)
+    : await sendMessage(botToken, chatId, topicId, post.text, post.replyMarkup);
+
   await sleep(PUBLISH_DELAY_MS);
   return messageId;
 }
