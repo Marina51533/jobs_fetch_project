@@ -18,11 +18,12 @@ export const EUROPEAN_COUNTRIES = new Set([
 export const EUROPEAN_CITIES = new Set([
   'amsterdam', 'athens', 'barcelona', 'belgrade', 'berlin', 'bern',
   'bratislava', 'brussels', 'bucharest', 'budapest', 'copenhagen',
+  'cologne', 'dortmund', 'dresden',
   'dublin', 'edinburgh', 'florence', 'frankfurt', 'geneva', 'hamburg',
-  'helsinki', 'istanbul', 'kyiv', 'lisbon', 'ljubljana', 'london',
+  'hanover', 'helsinki', 'istanbul', 'kyiv', 'leipzig', 'lisbon', 'ljubljana', 'london',
   'luxembourg', 'lyon', 'madrid', 'milan', 'moscow', 'munich', 'naples',
-  'nice', 'oslo', 'paris', 'prague', 'riga', 'rome', 'sofia',
-  'stockholm', 'tallinn', 'the hague', 'vienna', 'vilnius', 'warsaw',
+  'nice', 'nuremberg', 'oslo', 'paris', 'prague', 'riga', 'rome', 'sofia',
+  'stuttgart', 'stockholm', 'tallinn', 'the hague', 'vienna', 'vilnius', 'warsaw',
   'zagreb', 'zurich',
 ]);
 
