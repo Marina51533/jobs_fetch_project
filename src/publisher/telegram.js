@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 
 const PUBLISH_DELAY_MS = parseInt(process.env.PUBLISH_DELAY_MS || '1000', 10);
+const TELEGRAM_MAX_RETRIES = parseInt(process.env.TELEGRAM_MAX_RETRIES || '3', 10);
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -21,18 +22,28 @@ function buildRequestBody(chatId, topicId, replyMarkup = null) {
 
 async function telegramPost(botToken, method, body) {
   const url = `https://api.telegram.org/bot${botToken}/${method}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  for (let attempt = 0; attempt <= TELEGRAM_MAX_RETRIES; attempt++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-  const data = await res.json();
-  if (!data.ok) {
+    const data = await res.json();
+    if (data.ok) {
+      return data.result;
+    }
+
+    const retryAfter = data?.parameters?.retry_after;
+    if (data.error_code === 429 && retryAfter && attempt < TELEGRAM_MAX_RETRIES) {
+      await sleep((Number(retryAfter) + 1) * 1000);
+      continue;
+    }
+
     throw new Error(`Telegram ${method} error: ${JSON.stringify(data)}`);
   }
 
-  return data.result;
+  throw new Error(`Telegram ${method} error: exceeded retry limit`);
 }
 
 function resolveUrl(url, baseUrl) {

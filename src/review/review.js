@@ -25,6 +25,7 @@ export async function processReviewUpdates() {
 
     // Only accept responses from the configured admin
     if (adminId !== process.env.ADMIN_CHAT_ID) {
+      console.log(`[review] Ignored callback from unauthorized user ${adminId}`);
       await answerCallbackQuery(botToken, callback.id, 'Unauthorized');
       continue;
     }

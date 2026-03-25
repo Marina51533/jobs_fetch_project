@@ -15,11 +15,22 @@
  * @returns {{ final_decision, review_status, publish_target }}
  */
 export function routeJob(classification, geoDecision, confidenceThreshold = 0.8) {
-  const { label, confidence } = classification;
+  const { label, confidence, reasons = [] } = classification;
   const isConfident = label !== 'Uncertain' && confidence >= confidenceThreshold;
+  const hasNoSignal = reasons.includes('no_keyword_match');
+  const excludedOnly = reasons.some(reason => reason.startsWith('excluded_keyword:'));
 
   // Reject always wins
   if (geoDecision === 'reject') {
+    return {
+      final_decision: 'reject',
+      review_status: null,
+      publish_target: null,
+    };
+  }
+
+  // Jobs with no relevant classifier signal should not flood admin review.
+  if (label === 'Uncertain' && (hasNoSignal || excludedOnly)) {
     return {
       final_decision: 'reject',
       review_status: null,

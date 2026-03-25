@@ -59,7 +59,8 @@ npm start
 | `TELEGRAM_CHAT_ID` | Supergroup chat ID |
 | `QA_TOPIC_ID` | Topic ID for QA jobs |
 | `DEV_TOPIC_ID` | Topic ID for Developer jobs |
-| `ADMIN_CHAT_ID` | Admin's Telegram user ID for reviews |
+| `ADMIN_CHAT_ID` | Approving admin's Telegram user ID for review button clicks |
+| `REVIEW_CHAT_ID` | Optional group/chat ID where review messages are sent |
 | `CONFIDENCE_THRESHOLD` | Minimum confidence for auto-publish (default: 0.8) |
 | `FETCH_DELAY_MS` | Delay between Greenhouse API calls (default: 200) |
 | `PUBLISH_DELAY_MS` | Delay between Telegram posts (default: 1000) |

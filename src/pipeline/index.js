@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -19,6 +20,26 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BOARDS_PATH = path.resolve(__dirname, '../../config/boards.json');
 const CONFIDENCE_THRESHOLD = parseFloat(process.env.CONFIDENCE_THRESHOLD || '0.8');
 const FETCH_DELAY_MS = parseInt(process.env.FETCH_DELAY_MS || '200', 10);
+
+function validateEnv() {
+  const required = [
+    'QA_BOT_TOKEN',
+    'DEV_BOT_TOKEN',
+    'TELEGRAM_CHAT_ID',
+    'QA_TOPIC_ID',
+    'DEV_TOPIC_ID',
+    'ADMIN_CHAT_ID',
+  ];
+
+  const missing = required.filter(name => !process.env[name] || !String(process.env[name]).trim());
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}. Copy .env.example to .env and fill in the Telegram values.`);
+  }
+
+  if (String(process.env.ADMIN_CHAT_ID).startsWith('-')) {
+    throw new Error('ADMIN_CHAT_ID must be the approving user\'s Telegram user ID, not a group or channel ID. Use REVIEW_CHAT_ID for the admin review group/chat destination.');
+  }
+}
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -203,6 +224,8 @@ async function main() {
   console.log('========================================');
 
   try {
+    validateEnv();
+
     // Ensure schema is up to date
     await migrate();
 

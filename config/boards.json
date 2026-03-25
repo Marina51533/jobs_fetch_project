@@ -1,12 +1,6 @@
 {
   "boards": [
-    { "token": "stripe", "company": "Stripe" },
-    { "token": "notion", "company": "Notion" },
-    { "token": "figma", "company": "Figma" },
-    { "token": "gitlab", "company": "GitLab" },
-    { "token": "datadog", "company": "Datadog" },
-    { "token": "revolut", "company": "Revolut" },
-    { "token": "wikimedia", "company": "Wikimedia" },
-    { "token": "canonical", "company": "Canonical" }
+    { "token": "stripe", "company": "Stripe" }
+
   ]
 }

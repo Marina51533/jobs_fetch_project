@@ -7,7 +7,7 @@ import { formatReviewMessage } from '../publisher/formatter.js';
  */
 export async function sendForReview(job) {
   const botToken = process.env.QA_BOT_TOKEN;
-  const adminChatId = process.env.ADMIN_CHAT_ID;
+  const reviewChatId = process.env.REVIEW_CHAT_ID || process.env.ADMIN_CHAT_ID;
 
   const text = formatReviewMessage(job);
   const replyMarkup = {
@@ -18,7 +18,7 @@ export async function sendForReview(job) {
     ]],
   };
 
-  const messageId = await sendMessage(botToken, adminChatId, null, text, replyMarkup);
+  const messageId = await sendMessage(botToken, reviewChatId, null, text, replyMarkup);
   console.log(`[review] Sent job ${job.id} (${job.title}) for review, msg=${messageId}`);
   return messageId;
 }

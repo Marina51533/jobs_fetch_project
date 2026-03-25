@@ -7,6 +7,20 @@ const DB_PATH = process.env.DATABASE_PATH || path.resolve(__dirname, '..', 'data
 
 let db = null;
 
+function normalizeSqlAndParams(text, params) {
+  const orderedParams = [];
+  const sqliteText = text.replace(/\$(\d+)/g, (_, index) => {
+    const paramIndex = Number.parseInt(index, 10) - 1;
+    orderedParams.push(params[paramIndex]);
+    return '?';
+  });
+
+  return {
+    sql: sqliteText.replace(/\bNOW\(\)/gi, "datetime('now')"),
+    params: orderedParams.length > 0 ? orderedParams : params,
+  };
+}
+
 function getDb() {
   if (!db) {
     db = new Database(DB_PATH);
@@ -23,14 +37,11 @@ function getDb() {
  */
 export async function query(text, params = []) {
   const d = getDb();
-  // Convert $1, $2, ... placeholders to ? for SQLite
-  const sqliteText = text.replace(/\$\d+/g, '?');
-  // Replace NOW() with datetime('now')
-  const finalSql = sqliteText.replace(/\bNOW\(\)/gi, "datetime('now')");
+  const { sql: finalSql, params: finalParams } = normalizeSqlAndParams(text, params);
 
   const trimmed = finalSql.trim().toUpperCase();
   if (trimmed.startsWith('SELECT')) {
-    const rows = d.prepare(finalSql).all(...params);
+    const rows = d.prepare(finalSql).all(...finalParams);
     return { rows };
   }
 
@@ -38,14 +49,14 @@ export async function query(text, params = []) {
   if (/RETURNING\s+/i.test(finalSql)) {
     const withoutReturning = finalSql.replace(/\s*RETURNING\s+\w+/i, '');
     // Handle ON CONFLICT ... DO NOTHING
-    const info = d.prepare(withoutReturning).run(...params);
+    const info = d.prepare(withoutReturning).run(...finalParams);
     if (info.changes > 0) {
       return { rows: [{ id: String(info.lastInsertRowid) }] };
     }
     return { rows: [] };
   }
 
-  const info = d.prepare(finalSql).run(...params);
+  const info = d.prepare(finalSql).run(...finalParams);
   return { rows: [], changes: info.changes, lastInsertRowid: info.lastInsertRowid };
 }
 
