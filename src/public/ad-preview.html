@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telegram Ad Preview</title>
+  <style>
+    :root {
+      --bg: #f4f1e8;
+      --panel: rgba(255, 252, 245, 0.88);
+      --card: #ffffff;
+      --line: #d7d1c6;
+      --accent: #26735d;
+      --accent-dark: #165443;
+      --text: #1f2933;
+      --muted: #5f6c76;
+      --shadow: 0 24px 60px rgba(44, 62, 80, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(38, 115, 93, 0.16), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(219, 190, 132, 0.18), transparent 20%),
+        var(--bg);
+    }
+
+    .layout {
+      width: min(1240px, calc(100vw - 32px));
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .panel p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .tips {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .stage {
+      display: flex;
+      justify-content: center;
+    }
+
+    .telegram-shell {
+      width: min(760px, 100%);
+      min-height: 820px;
+      border-radius: 30px;
+      background:
+        linear-gradient(rgba(234, 242, 232, 0.94), rgba(239, 245, 238, 0.94)),
+        url('back.jpeg') center / cover no-repeat;
+      box-shadow: var(--shadow);
+      padding: 26px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .telegram-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(18,40,28,0.04));
+      pointer-events: none;
+    }
+
+    .message {
+      position: relative;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 24px;
+      padding: 22px;
+      border: 1px solid rgba(206, 222, 214, 0.95);
+      box-shadow: 0 20px 36px rgba(49, 73, 67, 0.12);
+    }
+
+    .source {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1d9bbd;
+      margin-bottom: 8px;
+    }
+
+    .summary-line {
+      font-size: 23px;
+      line-height: 1.2;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .company-line,
+    .meta-line,
+    .posted-line,
+    .apply-line {
+      font-size: 20px;
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .apply-link {
+      color: #1394d6;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .preview-card {
+      margin-top: 28px;
+      background: #e7f2f4;
+      border-radius: 16px;
+      padding: 14px;
+      border-left: 5px solid #53b4bd;
+    }
+
+    .preview-header {
+      color: #2f9bad;
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .preview-title {
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .preview-text {
+      font-size: 17px;
+      line-height: 1.35;
+      margin-bottom: 12px;
+    }
+
+    .banner {
+      height: 350px;
+      border-radius: 10px;
+      background:
+        linear-gradient(140deg, rgba(9, 16, 39, 0.82), rgba(49, 46, 190, 0.42)),
+        url('back.jpeg') center / cover no-repeat;
+      color: white;
+      display: flex;
+      align-items: end;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.22));
+    }
+
+    .banner-content {
+      position: relative;
+      max-width: 78%;
+    }
+
+    .banner-badge {
+      display: inline-block;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(255, 101, 61, 0.92);
+      padding: 7px 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .banner-title {
+      font-size: clamp(30px, 4vw, 58px);
+      line-height: 0.98;
+      font-weight: 700;
+      text-wrap: balance;
+      margin: 0;
+    }
+
+    .footer-bar {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .action-button {
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(180deg, #6ab46b, #3f8f44);
+      color: white;
+      box-shadow: 0 12px 24px rgba(57, 124, 61, 0.18);
+    }
+
+    .action-button.secondary {
+      background: linear-gradient(180deg, #6ca394, #517e72);
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(31, 41, 51, 0.72);
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .telegram-shell {
+        min-height: auto;
+      }
+
+      .banner {
+        height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="panel">
+      <h1>Ad Preview</h1>
+      <p>Edit the fields to preview how the ad can look with your local background image.</p>
+
+      <div class="field">
+        <label for="title">Job title</label>
+        <input id="title" value="Senior QA Automation Engineer" />
+      </div>
+
+      <div class="field">
+        <label for="company">Company</label>
+        <input id="company" value="Acme Labs" />
+      </div>
+
+      <div class="field">
+        <label for="location">Location</label>
+        <input id="location" value="Berlin, Germany" />
+      </div>
+
+      <div class="field">
+        <label for="type">Type</label>
+        <select id="type">
+          <option>Remote</option>
+          <option>Hybrid</option>
+          <option>On-site</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="posted">Posted</label>
+        <input id="posted" value="2 days ago" />
+      </div>
+
+      <div class="field">
+        <label for="source">Source label</label>
+        <input id="source" value="CryptoJobsList | Web3 Jobs" />
+      </div>
+
+      <div class="field">
+        <label for="url">Apply URL</label>
+        <input id="url" value="https://example.com/jobs/senior-qa-automation-engineer" />
+      </div>
+
+      <div class="tips">
+        Background image used here:
+        <strong>src/public/back.jpeg</strong>
+        <br /><br />
+        This page is a visual preview only. Telegram will render the final post using its own message and button UI.
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div class="telegram-shell">
+        <article class="message">
+          <div class="source" id="preview-source">CryptoJobsList | Web3 Jobs</div>
+          <div class="summary-line" id="preview-title">Senior QA Automation Engineer</div>
+          <div class="company-line">🏢 <span id="preview-company">Acme Labs</span></div>
+          <div class="meta-line">📍 <span id="preview-location">Berlin, Germany</span></div>
+          <div class="meta-line">🌍 <span id="preview-type">Remote</span></div>
+          <div class="posted-line">🕒 Still hiring! Posted <span id="preview-posted">2 days ago</span></div>
+          <div class="apply-line">✅ Apply → <a id="preview-url-top" class="apply-link" href="https://example.com/jobs/senior-qa-automation-engineer">https://example.com/jobs/senior-qa-automation-engineer</a></div>
+
+          <div class="preview-card">
+            <div class="preview-header" id="preview-source-card">CryptoJobsList</div>
+            <div class="preview-title" id="preview-title-card">Senior QA Automation Engineer at Acme Labs</div>
+            <div class="preview-text" id="preview-text-card">Remote Senior QA Automation Engineer at Acme Labs. Apply now and share with your network.</div>
+
+            <div class="banner">
+              <div class="banner-content">
+                <div class="banner-badge" id="preview-company-badge">Acme Labs</div>
+                <h2 class="banner-title" id="preview-banner-title">Senior QA Automation Engineer</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-bar">
+            <button class="action-button">✅ Apply</button>
+            <button class="action-button secondary">↗ Share</button>
+          </div>
+
+          <div class="note">Local visual preview. Telegram inline buttons and media layout may differ slightly in the real app.</div>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const fields = {
+      title: document.getElementById('title'),
+      company: document.getElementById('company'),
+      location: document.getElementById('location'),
+      type: document.getElementById('type'),
+      posted: document.getElementById('posted'),
+      source: document.getElementById('source'),
+      url: document.getElementById('url'),
+    };
+
+    const targets = {
+      source: document.getElementById('preview-source'),
+      sourceCard: document.getElementById('preview-source-card'),
+      title: document.getElementById('preview-title'),
+      titleCard: document.getElementById('preview-title-card'),
+      company: document.getElementById('preview-company'),
+      companyBadge: document.getElementById('preview-company-badge'),
+      location: document.getElementById('preview-location'),
+      type: document.getElementById('preview-type'),
+      posted: document.getElementById('preview-posted'),
+      urlTop: document.getElementById('preview-url-top'),
+      textCard: document.getElementById('preview-text-card'),
+      bannerTitle: document.getElementById('preview-banner-title'),
+    };
+
+    function simplifySourceLabel(value) {
+      return value.split('|')[0].trim();
+    }
+
+    function syncPreview() {
+      const title = fields.title.value.trim() || 'Untitled role';
+      const company = fields.company.value.trim() || 'Unknown company';
+      const location = fields.location.value.trim() || 'Not specified';
+      const type = fields.type.value.trim() || 'Remote';
+      const posted = fields.posted.value.trim() || 'Recently';
+      const source = fields.source.value.trim() || 'Jobs Feed';
+      const url = fields.url.value.trim() || '#';
+
+      targets.source.textContent = source;
+      targets.sourceCard.textContent = simplifySourceLabel(source);
+      targets.title.textContent = title;
+      targets.titleCard.textContent = `${title} at ${company}`;
+      targets.company.textContent = company;
+      targets.companyBadge.textContent = company;
+      targets.location.textContent = location;
+      targets.type.textContent = type;
+      targets.posted.textContent = posted;
+      targets.urlTop.textContent = url;
+      targets.urlTop.href = url;
+      targets.bannerTitle.textContent = title;
+      targets.textCard.textContent = `${type} ${title} at ${company}. Apply now and share with your network.`;
+    }
+
+    Object.values(fields).forEach(field => {
+      field.addEventListener('input', syncPreview);
+      field.addEventListener('change', syncPreview);
+    });
+
+    syncPreview();
+  </script>
+</body>
+</html>

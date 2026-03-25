@@ -105,7 +105,8 @@ npm start
 │       ├── job-aggregation-spec.md
 │       ├── job-aggregation-plan.md
 │       ├── job-aggregation-tasks.md
-│       └── job-aggregation-notes.md
+│       ├── job-aggregation-notes.md
+│       └── job-aggregation-telegram-notes.md
 ├── .env.example
 └── package.json
 ```
@@ -132,3 +133,4 @@ Full task documentation is in [tasks/job-aggregation/](tasks/job-aggregation/):
 - [Plan](tasks/job-aggregation/job-aggregation-plan.md) — Architecture, modules, delivery phases
 - [Tasks](tasks/job-aggregation/job-aggregation-tasks.md) — MVP and future backlog
 - [Notes](tasks/job-aggregation/job-aggregation-notes.md) — Architecture decisions and open questions
+- [Telegram Notes](tasks/job-aggregation/job-aggregation-telegram-notes.md) — Telegram setup, IDs, topics, and `getUpdates` debugging
