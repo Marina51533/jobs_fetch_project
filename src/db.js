@@ -40,7 +40,7 @@ export async function query(text, params = []) {
   const { sql: finalSql, params: finalParams } = normalizeSqlAndParams(text, params);
 
   const trimmed = finalSql.trim().toUpperCase();
-  if (trimmed.startsWith('SELECT')) {
+  if (trimmed.startsWith('SELECT') || trimmed.startsWith('PRAGMA')) {
     const rows = d.prepare(finalSql).all(...finalParams);
     return { rows };
   }

@@ -124,12 +124,15 @@ export function formatJobPost(job) {
  */
 export function formatReviewMessage(job) {
   const emoji = WORK_MODE_EMOJI[job.work_mode] || '❓';
+  const sourceRef = job.source_board_token
+    ? `${job.source}/${job.source_board_token}`
+    : job.source;
 
   let message = `🔍 <b>Review needed</b>\n\n`;
   message += `<b>Title:</b> ${escapeHtml(job.title)}\n`;
   message += `<b>Company:</b> ${escapeHtml(job.company)}\n`;
   message += `<b>Location:</b> ${escapeHtml(job.location_text || 'N/A')} | ${emoji} ${job.work_mode}\n`;
-  message += `<b>Source:</b> ${job.source}/${job.source_board_token}\n`;
+  message += `<b>Source:</b> ${escapeHtml(sourceRef)}\n`;
   message += `<b>URL:</b> <a href="${escapeHtml(job.job_url)}">View job</a>\n\n`;
   message += `<b>Suggested:</b> ${job.classification_label} (confidence: ${job.classification_confidence})\n`;
 

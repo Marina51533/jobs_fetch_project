@@ -107,6 +107,19 @@ export function extractCountry(locationText) {
 }
 
 /**
+ * Check whether a normalized country marker represents a European location.
+ */
+export function isEuropeanLocationCountry(locationCountry) {
+  const lower = (locationCountry || '').toLowerCase().trim();
+  if (!lower) return false;
+
+  if (EUROPEAN_COUNTRIES.has(lower)) return true;
+  if (lower.startsWith('europe (') && lower.endsWith(')')) return true;
+
+  return false;
+}
+
+/**
  * Check if location indicates a specifically non-European remote restriction.
  */
 export function isNonEuRestricted(locationText) {

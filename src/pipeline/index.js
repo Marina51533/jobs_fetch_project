@@ -6,7 +6,8 @@ import path from 'path';
 import db from '../db.js';
 import { migrate } from '../migrate.js';
 import { fetchAllBoards, fetchJobDetail } from '../sources/greenhouse.js';
-import { normalizeJob } from '../normalizer/normalize.js';
+import { fetchWeb3Jobs } from '../sources/web3Career.js';
+import { normalizeJob, normalizeWeb3Job } from '../normalizer/normalize.js';
 import { isDuplicate, saveJob, updateJobDecisions, markPublished, getApprovedUnpublished } from '../dedup/dedup.js';
 import { classifyJobs } from '../classifier/classify.js';
 import { applyGeoFilter } from '../geo/geoFilter.js';
@@ -106,6 +107,12 @@ async function stageFetchAndProcess() {
   console.log(`[config] Loaded ${boards.length} board tokens`);
 
   const boardResults = await fetchAllBoards(boards);
+  let web3Result = { jobs: [], skipped: true };
+  try {
+    web3Result = await fetchWeb3Jobs();
+  } catch (err) {
+    console.error(`[web3] FAILED — ${err.message}`);
+  }
 
   const stats = {
     fetched: 0,
@@ -225,6 +232,102 @@ async function stageFetchAndProcess() {
     }
 
     console.log(`[board] ${boardToken}: done`);
+  }
+
+  if (web3Result.skipped) {
+    console.log(`[web3] Skipped — ${web3Result.reason}`);
+    return stats;
+  }
+
+  console.log(`\n[source] Processing web3_career (${web3Result.jobs.length} jobs)`);
+  const newWeb3Jobs = [];
+
+  for (const rawJob of web3Result.jobs) {
+    stats.fetched++;
+    const dedupeKey = `web3_career:${rawJob.id}`;
+
+    const updatedAt = rawJob.date_epoch
+      ? (() => {
+          const numericEpoch = Number(rawJob.date_epoch);
+          if (!Number.isFinite(numericEpoch) || numericEpoch <= 0) return null;
+          const epochMs = numericEpoch > 10_000_000_000 ? numericEpoch : numericEpoch * 1000;
+          return new Date(epochMs).toISOString();
+        })()
+      : rawJob.date || null;
+
+    if (!isWithinAgeLimit(updatedAt, MAX_SOURCE_JOB_AGE_DAYS)) {
+      continue;
+    }
+
+    if (await isDuplicate(dedupeKey)) {
+      stats.duplicates++;
+      continue;
+    }
+
+    newWeb3Jobs.push(normalizeWeb3Job(rawJob));
+  }
+
+  if (newWeb3Jobs.length > 0) {
+    let classifications;
+    try {
+      classifications = await classifyJobs(newWeb3Jobs);
+      stats.classified += classifications.length;
+    } catch (err) {
+      console.error(`[classify] Classifier failed for web3_career: ${err.message}`);
+      stats.errors += newWeb3Jobs.length;
+      return stats;
+    }
+
+    for (let i = 0; i < newWeb3Jobs.length; i++) {
+      const job = newWeb3Jobs[i];
+      const classification = classifications[i];
+
+      try {
+        const geoDecision = applyGeoFilter(job);
+        const routing = routeJob(classification, geoDecision, CONFIDENCE_THRESHOLD);
+
+        const enrichedJob = {
+          ...job,
+          classification_label: classification.label,
+          classification_confidence: classification.confidence,
+          classification_reasons: classification.reasons,
+          geo_decision: geoDecision,
+          final_decision: routing.final_decision,
+          review_status: routing.review_status,
+          publish_target: routing.publish_target,
+          processing_status: 'processed',
+        };
+
+        const saved = await saveJob(enrichedJob);
+        if (!saved) {
+          stats.duplicates++;
+          continue;
+        }
+
+        if (routing.final_decision === 'auto_publish') {
+          const post = formatJobPost({ ...enrichedJob, id: saved.id });
+          const messageId = await publishJob(enrichedJob, post);
+          await markPublished(
+            saved.id,
+            routing.publish_target === 'qa' ? 'qa_bot' : 'dev_bot',
+            messageId
+          );
+          stats.autoPublished++;
+          console.log(`[publish] ${job.title} → ${routing.publish_target}`);
+        } else if (routing.final_decision === 'review') {
+          await sendForReview({ ...enrichedJob, id: saved.id });
+          stats.sentToReview++;
+        } else {
+          stats.rejected++;
+          console.log(`[reject] ${job.title} — geo:${geoDecision} class:${classification.label}`);
+        }
+      } catch (err) {
+        console.error(`[process] Error processing ${job.title}: ${err.message}`);
+        stats.errors++;
+      }
+    }
+  } else {
+    console.log('[web3] no new jobs');
   }
 
   return stats;

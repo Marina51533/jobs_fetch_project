@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   -- Source identification
   source              TEXT NOT NULL,
   source_job_id       TEXT NOT NULL,
-  source_board_token  TEXT NOT NULL,
+  source_board_token  TEXT,
   dedupe_key          TEXT NOT NULL,
   dedupe_hash         TEXT,
 
