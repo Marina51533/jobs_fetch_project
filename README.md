@@ -4,6 +4,8 @@ Automatic job aggregation and publishing for **DEV Career Community | Europe**.
 
 Fetches jobs from Greenhouse, classifies them into QA and Developer categories, filters by geography, and publishes to separate Telegram topics via separate bots.
 
+Greenhouse runs in GitHub Actions. Web3 runs locally on macOS because web3.career blocks GitHub-hosted runner IPs.
+
 ## Architecture
 
 ```
@@ -17,6 +19,11 @@ GitHub Actions (cron every 2h)
     → Router (auto-publish / review / reject)
     → Telegram Publisher (2 bots, 2 topics)
     → Admin Review (inline buttons via getUpdates)
+
+macOS launchd (every 2h)
+  → Node.js Pipeline Orchestrator
+    → Web3 Career Fetcher only
+    → shared normalize / dedupe / classify / publish flow
 ```
 
 ## Quick Start
@@ -47,6 +54,15 @@ cp .env.example .env
 
 # Run the pipeline
 npm start
+
+# Run Web3 only
+npm run start:web3
+
+# Install macOS local scheduler (runs immediately, then every 2 hours)
+npm run schedule:macos
+
+# Remove macOS local scheduler
+npm run schedule:macos:remove
 ```
 
 ### Environment Variables
@@ -65,6 +81,49 @@ npm start
 | `FETCH_DELAY_MS` | Delay between Greenhouse API calls (default: 200) |
 | `PUBLISH_DELAY_MS` | Delay between Telegram posts (default: 1000) |
 | `MAX_SOURCE_JOB_AGE_DAYS` | Only process jobs updated in the last N days; `0` disables the filter |
+
+## Run Automatically On macOS
+
+If you want Web3 fetching to run automatically on your Mac, use the bundled `launchd` helper instead of GitHub Actions.
+
+```bash
+npm run schedule:macos
+```
+
+This local scheduler runs the pipeline with `SOURCE_MODE=web3`, so only the Web3 source is fetched on your Mac.
+
+Manual local Web3 run:
+
+```bash
+npm run start:web3
+```
+
+To remove the local scheduler:
+
+```bash
+npm run schedule:macos:remove
+```
+
+What it does:
+
+- installs a LaunchAgent at `~/Library/LaunchAgents/com.marina.jobs-fetch-project.plist`
+- runs the pipeline once on load
+- reruns it every 2 hours
+- writes logs to `data/logs/`
+
+To verify it is loaded:
+
+```bash
+launchctl list | grep com.marina.jobs-fetch-project
+```
+
+To stop it:
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.marina.jobs-fetch-project.plist
+```
+
+GitHub Actions runs Greenhouse sources only. Web3 fetching is intended to run locally on macOS because web3.career blocks GitHub-hosted runner IPs.
 
 ## Project Structure
 
@@ -136,3 +195,9 @@ Full task documentation is in [tasks/job-aggregation/](tasks/job-aggregation/):
 - [Tasks](tasks/job-aggregation/job-aggregation-tasks.md) — MVP and future backlog
 - [Notes](tasks/job-aggregation/job-aggregation-notes.md) — Architecture decisions and open questions
 - [Telegram Notes](tasks/job-aggregation/job-aggregation-telegram-notes.md) — Telegram setup, IDs, topics, and `getUpdates` debugging
+
+Web3-specific documentation is in [tasks/web3/](tasks/web3/):
+
+- [Plan](tasks/web3/web3-plan.md) — Source integration and operating model
+- [Tasks](tasks/web3/web3-tasks.md) — Remaining work and verification items
+- [Notes](tasks/web3/web3-notes.md) — Source policy, local-only automation, and decisions

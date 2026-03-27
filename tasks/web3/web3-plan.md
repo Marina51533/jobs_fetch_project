@@ -7,8 +7,8 @@ Add Web3 Career as a dedicated source connector that plugs into the existing nor
 ## Architecture Fit
 
 ```text
-GitHub Actions / local run
-  -> pipeline orchestrator
+macOS launchd / manual local run
+  -> pipeline orchestrator (SOURCE_MODE=web3)
     -> web3Career source connector
     -> normalizer
     -> dedupe
@@ -50,6 +50,13 @@ WEB3_CAREER_API_TOKEN=...
 Connector enablement rule:
 
 - only run the Web3 source when the token is present
+- local automation should set `SOURCE_MODE=web3`
+
+Current run model:
+
+- GitHub Actions: Greenhouse only
+- local macOS scheduler: Web3 only
+- manual local command: `npm run start:web3`
 
 ## Rollout Plan
 
@@ -77,6 +84,12 @@ Connector enablement rule:
 - confirm the URL is preserved exactly
 - confirm no token leakage in logs or docs
 
+### Phase 5: Local automation
+
+- install a macOS LaunchAgent for Web3-only runs
+- log output to `data/logs/`
+- provide start and remove commands through `package.json`
+
 ## Design Constraints
 
 - do not reuse the Greenhouse board abstraction for Web3
@@ -89,3 +102,4 @@ Connector enablement rule:
 - Web3 jobs flow through the same pipeline safely
 - source policy is respected
 - the implementation is isolated and easy to maintain
+- the source runs reliably outside GitHub-hosted CI

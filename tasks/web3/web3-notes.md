@@ -51,12 +51,46 @@ The key obligations are:
 
 **Status**: Accepted.
 
+---
+
+### ADR-5: Run Web3 locally, not in GitHub Actions
+
+**Decision**: Web3 fetches should run from the local macOS scheduler and not from GitHub-hosted CI.
+
+**Reason**: web3.career returns HTML or Cloudflare challenge pages to GitHub-hosted runner IPs, which breaks JSON parsing even with a valid token.
+
+**Status**: Accepted.
+
+---
+
+### ADR-6: Use source-mode switching for isolated Web3 runs
+
+**Decision**: The pipeline supports `SOURCE_MODE=web3` so local automation can fetch only Web3 jobs while GitHub Actions handles Greenhouse.
+
+**Reason**: This avoids duplicate Greenhouse processing on the local machine and keeps the Web3 workaround isolated.
+
+**Status**: Accepted.
+
+## Current Operating Model
+
+- GitHub Actions runs Greenhouse only
+- local macOS `launchd` runs Web3 only every 2 hours
+- manual Web3-only runs use `npm run start:web3`
+- the local scheduler is installed with `npm run schedule:macos`
+- the local scheduler is removed with `npm run schedule:macos:remove`
+
+## Local Automation Details
+
+- launch agent path: `~/Library/LaunchAgents/com.marina.jobs-fetch-project.plist`
+- runner script: `scripts/run-pipeline.sh`
+- logs: `data/logs/pipeline.log`, `data/logs/pipeline.error.log`, `data/logs/launchd.out.log`, `data/logs/launchd.err.log`
+
 ## Open Questions
 
 | # | Question | Status |
 |---|---|---|
 | 1 | Should Web3 `tags` be surfaced in Telegram posts? | Open |
-| 2 | Should the source be always on or env-gated? | Open, but env-gated is recommended |
+| 2 | Should the source be always on or env-gated? | Resolved: env-gated and run locally with `SOURCE_MODE=web3` |
 | 3 | Should the pipeline use source-side filters later for performance? | Deferred |
 
 ## Implementation Reminder

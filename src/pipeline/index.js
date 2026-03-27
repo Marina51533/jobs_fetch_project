@@ -22,6 +22,15 @@ const BOARDS_PATH = path.resolve(__dirname, '../../config/boards.json');
 const CONFIDENCE_THRESHOLD = parseFloat(process.env.CONFIDENCE_THRESHOLD || '0.8');
 const FETCH_DELAY_MS = parseInt(process.env.FETCH_DELAY_MS || '200', 10);
 const MAX_SOURCE_JOB_AGE_DAYS = parseInt(process.env.MAX_SOURCE_JOB_AGE_DAYS || '0', 10);
+const SOURCE_MODE = (process.env.SOURCE_MODE || 'all').trim().toLowerCase();
+
+function shouldRunGreenhouse() {
+  return SOURCE_MODE === 'all' || SOURCE_MODE === 'greenhouse';
+}
+
+function shouldRunWeb3() {
+  return SOURCE_MODE === 'all' || SOURCE_MODE === 'web3';
+}
 
 function validateEnv() {
   const required = [
@@ -103,15 +112,24 @@ async function stageProcessReviews() {
 async function stageFetchAndProcess() {
   console.log('\n=== Stage 2: Fetch and process new jobs ===');
 
-  const boards = await loadBoards();
-  console.log(`[config] Loaded ${boards.length} board tokens`);
+  let boardResults = [];
+  if (shouldRunGreenhouse()) {
+    const boards = await loadBoards();
+    console.log(`[config] Loaded ${boards.length} board tokens`);
+    boardResults = await fetchAllBoards(boards);
+  } else {
+    console.log('[config] Greenhouse fetch disabled for this run');
+  }
 
-  const boardResults = await fetchAllBoards(boards);
   let web3Result = { jobs: [], skipped: true };
-  try {
-    web3Result = await fetchWeb3Jobs();
-  } catch (err) {
-    console.error(`[web3] FAILED — ${err.message}`);
+  if (shouldRunWeb3()) {
+    try {
+      web3Result = await fetchWeb3Jobs();
+    } catch (err) {
+      console.error(`[web3] FAILED — ${err.message}`);
+    }
+  } else {
+    web3Result = { jobs: [], skipped: true, reason: 'disabled for this run' };
   }
 
   const stats = {
@@ -340,6 +358,7 @@ async function main() {
   console.log('========================================');
   console.log(' Job Aggregation Pipeline');
   console.log(` Started: ${new Date().toISOString()}`);
+  console.log(` Source mode: ${SOURCE_MODE}`);
   console.log('========================================');
 
   try {
