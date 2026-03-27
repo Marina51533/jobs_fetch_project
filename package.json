@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/pipeline/index.js",
+    "db:cleanup": "node src/cleanup.js",
     "test": "node --test src/**/*.test.js",
     "classify": "python3 classifier/classify.py",
     "sample:job": "node scripts/find-sample-job.js",

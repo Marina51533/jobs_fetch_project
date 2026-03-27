@@ -30,10 +30,19 @@ export async function fetchWeb3Jobs() {
 
   const res = await fetch(buildWeb3Url(token));
   if (!res.ok) {
-    throw new Error(`Web3 Career API error: ${res.status} ${res.statusText}`);
+    const text = await res.text().catch(() => 'No response body');
+    throw new Error(`Web3 Career API error: ${res.status} ${res.statusText}\nBody: ${text.substring(0, 500)}`);
   }
 
-  const payload = await res.json();
+  const text = await res.text();
+  let payload;
+  try {
+    payload = JSON.parse(text);
+  } catch (err) {
+    console.error(`[web3] JSON parse error. First 200 chars: ${text.substring(0, 200)}`);
+    throw new Error(`Web3 Career API returned invalid JSON: ${err.message}`);
+  }
+
   const jobs = extractWeb3Jobs(payload);
   console.log(`[web3] fetched ${jobs.length} jobs`);
   return { jobs };

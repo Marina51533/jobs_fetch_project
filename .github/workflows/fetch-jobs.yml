@@ -58,6 +58,11 @@ jobs:
           PUBLISH_DELAY_MS: '1000'
         run: node src/pipeline/index.js
 
+      - name: Cleanup old database records (if >= 45 days)
+        env:
+          DATABASE_PATH: ./data/jobs.db
+        run: npm run db:cleanup
+
       - name: Save SQLite database
         if: always()
         uses: actions/upload-artifact@v4
