@@ -13,4 +13,7 @@ cd "$REPO_ROOT"
 
 export SOURCE_MODE="${SOURCE_MODE:-web3}"
 
-exec node src/pipeline/index.js >> "$LOG_DIR/pipeline.log" 2>> "$LOG_DIR/pipeline.error.log"
+NODE_BIN="${NODE_BIN:-$(command -v node)}"
+export PATH="$(dirname "$NODE_BIN"):$PATH"
+
+exec "$NODE_BIN" src/pipeline/index.js >> "$LOG_DIR/pipeline.log" 2>> "$LOG_DIR/pipeline.error.log"

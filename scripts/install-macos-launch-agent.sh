@@ -7,6 +7,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 PLIST_PATH="$LAUNCH_AGENTS_DIR/com.marina.jobs-fetch-project.plist"
 RUNNER_PATH="$REPO_ROOT/scripts/run-pipeline.sh"
+NODE_BIN="$(command -v node)"
 
 mkdir -p "$LAUNCH_AGENTS_DIR"
 
@@ -17,6 +18,14 @@ cat > "$PLIST_PATH" <<PLIST
 <dict>
   <key>Label</key>
   <string>com.marina.jobs-fetch-project</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NODE_BIN</key>
+    <string>$NODE_BIN</string>
+    <key>SOURCE_MODE</key>
+    <string>web3</string>
+  </dict>
 
   <key>ProgramArguments</key>
   <array>
