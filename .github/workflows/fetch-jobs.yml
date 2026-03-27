@@ -53,6 +53,8 @@ jobs:
           QA_TOPIC_ID: ${{ secrets.QA_TOPIC_ID }}
           DEV_TOPIC_ID: ${{ secrets.DEV_TOPIC_ID }}
           ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+          REVIEW_CHAT_ID: ${{ secrets.REVIEW_CHAT_ID }}
+          MAX_SOURCE_JOB_AGE_DAYS: '30'
           CONFIDENCE_THRESHOLD: '0.8'
           FETCH_DELAY_MS: '200'
           PUBLISH_DELAY_MS: '1000'

@@ -167,9 +167,17 @@ export async function publishJob(job, post) {
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   const bannerUrl = await resolveBannerUrl(job);
-  const messageId = bannerUrl
-    ? await sendPhoto(botToken, chatId, topicId, bannerUrl, post.text, post.replyMarkup)
-    : await sendMessage(botToken, chatId, topicId, post.text, post.replyMarkup);
+  let messageId;
+  if (bannerUrl) {
+    try {
+      messageId = await sendPhoto(botToken, chatId, topicId, bannerUrl, post.text, post.replyMarkup);
+    } catch (err) {
+      console.warn(`[publish] sendPhoto failed, falling back to sendMessage: ${err.message}`);
+      messageId = await sendMessage(botToken, chatId, topicId, post.text, post.replyMarkup);
+    }
+  } else {
+    messageId = await sendMessage(botToken, chatId, topicId, post.text, post.replyMarkup);
+  }
 
   await sleep(PUBLISH_DELAY_MS);
   return messageId;
