@@ -28,7 +28,12 @@ export async function fetchWeb3Jobs() {
     return { jobs: [], skipped: true, reason: 'WEB3_CAREER_API_TOKEN not configured' };
   }
 
-  const res = await fetch(buildWeb3Url(token));
+  const res = await fetch(buildWeb3Url(token), {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; JobAggregator/1.0)',
+      'Accept': 'application/json',
+    },
+  });
   if (!res.ok) {
     const text = await res.text().catch(() => 'No response body');
     throw new Error(`Web3 Career API error: ${res.status} ${res.statusText}\nBody: ${text.substring(0, 500)}`);
